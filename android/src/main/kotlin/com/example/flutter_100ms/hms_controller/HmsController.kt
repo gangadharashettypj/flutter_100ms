@@ -1,8 +1,14 @@
 package com.example.flutter_100ms.hms_controller
 
 import android.content.Context
+import android.util.Log
+import androidx.annotation.Nullable
+import androidx.appcompat.app.AppCompatActivity
+import com.example.flutter_100ms.api.Status
 import com.example.flutter_100ms.constants.OutGoingMethodType
 import com.example.flutter_100ms.extensions.sendEvent
+import com.example.flutter_100ms.model.RoomDetails
+import com.example.flutter_100ms.model.TokenResponse
 import io.flutter.plugin.common.EventChannel
 import live.hms.video.error.HMSException
 import live.hms.video.media.settings.HMSTrackSettings
@@ -20,10 +26,14 @@ import live.hms.video.sdk.models.enums.HMSTrackUpdate
 import live.hms.video.utils.HMSLogger
 import live.hms.video.utils.toJson
 import live.hms.video.utils.toJsonObject
+import java.util.*
+
 
 class HmsController {
     private lateinit var hmsSDK: HMSSDK
     private lateinit var eventSink: EventChannel.EventSink
+    private var hmsRequestHandler = HMSRequestHandler()
+    private lateinit var settings: SettingsStore
 
     companion object {
         var instance = HmsController()
@@ -50,8 +60,37 @@ class HmsController {
             .build()
     }
 
-    fun join(hmsConfig: HMSConfig){
-        hmsSDK.join(hmsConfig, hmsUpdateListener)
+    fun join(userName: String, description: String) {
+
+        hmsRequestHandler.authTokenResponse.observeForever { response ->
+            when (response.status) {
+                Status.LOADING -> {
+
+                }
+                Status.SUCCESS -> {
+                    val data = response.data!!
+                    val roomDetails = RoomDetails(
+                        env = settings.environment,
+                        url = settings.lastUsedMeetingUrl,
+                        username = userName,
+                        authToken = data.token
+                    )
+                    Log.i("HMS", "Auth Token: ${roomDetails.authToken}")
+
+                    val config = HMSConfig(
+                        userName = userName,
+                        authtoken = data.token,
+                        metadata = description,
+                        initEndpoint = "https://${settings.environment}.100ms.live/init"
+                    )
+
+                    hmsSDK.join(config, hmsUpdateListener)
+                }
+                Status.ERROR -> {
+                    Log.e("HMS", "observeLiveData: $response")
+                }
+            }
+        }
     }
 
     fun leave() {
@@ -97,7 +136,7 @@ class HmsController {
         return 120
     }
 
-    private val hmsUpdateListener = object: HMSUpdateListener {
+    private val hmsUpdateListener = object : HMSUpdateListener {
 
         override fun onJoin(room: HMSRoom) {
             eventSink.sendEvent(OutGoingMethodType.ON_JOIN, room.toJson())

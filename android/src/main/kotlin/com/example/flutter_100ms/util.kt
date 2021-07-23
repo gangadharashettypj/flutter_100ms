@@ -1,7 +1,7 @@
 package com.example.flutter_100ms
 
 inline fun throwIf(condition: Boolean, thr: () -> Throwable) {
-    if(condition) {
+    if (condition) {
         throw thr()
     }
 }

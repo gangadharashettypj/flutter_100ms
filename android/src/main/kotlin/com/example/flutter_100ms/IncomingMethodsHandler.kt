@@ -22,21 +22,13 @@ fun initMethodChannelHandler(
 
 fun joinMethodChannelHandler(call: MethodCall, result: MethodChannel.Result) {
 
-    val userName = call.argument<String>("username")
-    val authToken = call.argument<String>("authToken")
+    val userName = call.argument<String>("userName")
     val description = call.argument<String>("description")
 
     throwIf(userName.isNullOrBlank()) { IllegalArgumentException(userName) }
-    throwIf(authToken.isNullOrBlank()) { IllegalArgumentException(authToken) }
-
-    val config = HMSConfig(
-        userName = userName!!,
-        authtoken = authToken!!,
-        metadata = description ?: "{}"
-    )
 
     try {
-        HmsController.instance.join(hmsConfig = config)
+        HmsController.instance.join(userName!!, description ?: "{}")
     } catch (e: Exception) {
         e.printStackTrace()
         result.success(false)
