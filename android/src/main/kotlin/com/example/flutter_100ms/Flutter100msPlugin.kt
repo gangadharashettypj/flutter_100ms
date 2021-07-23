@@ -25,17 +25,17 @@ class Flutter100msPlugin : FlutterPlugin, MethodCallHandler {
 
     private lateinit var context: Context
 
-    private lateinit var eventSink: EventSink
+    private var eventSink: EventSink? = null
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter_100ms")
         channel.setMethodCallHandler(this)
 
         context = flutterPluginBinding.applicationContext
-        val eventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "HMSPluginEvents")
+        val eventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "flutter_100ms_events")
         eventChannel.setStreamHandler(object : StreamHandler {
             override fun onListen(arguments: Any?, events: EventSink?) {
-                eventSink = events!!
+                eventSink = events
             }
 
             override fun onCancel(arguments: Any?) {
@@ -50,7 +50,7 @@ class Flutter100msPlugin : FlutterPlugin, MethodCallHandler {
                 result.success("Android ${android.os.Build.VERSION.RELEASE}")
             }
             IncomingMethodType.INIT.name -> {
-                initMethodChannelHandler(call, result, context, eventSink)
+                initMethodChannelHandler(call, result, context, eventSink = eventSink!!)
             }
             IncomingMethodType.JOIN.name -> {
                 joinMethodChannelHandler(call, result)
