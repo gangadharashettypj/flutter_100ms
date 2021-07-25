@@ -4,7 +4,7 @@ import 'package:flutter_100ms/flutter_100ms.dart';
 
 void listenEvents() {
   Flutter100ms.eventChannel.receiveBroadcastStream().listen((data) async {
-    dynamic event = jsonDecode(data)['nameValuePairs'];
+    dynamic event = jsonDecode(data);
     String eventName = event['eventType'];
     dynamic eventArguments = event['arguments'];
     print('>>>>>>>>>>>');

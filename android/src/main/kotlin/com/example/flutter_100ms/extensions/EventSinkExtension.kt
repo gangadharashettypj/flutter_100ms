@@ -15,6 +15,6 @@ fun EventChannel.EventSink.sendEvent(eventType: OutGoingMethodType, arguments: S
     }
 
     Flutter100msPlugin.handler?.post {
-        this.success(json.toJson())
+        this.success(json.toString())
     }
 }

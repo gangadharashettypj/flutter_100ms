@@ -134,41 +134,41 @@ class HmsController {
     private val hmsUpdateListener = object : HMSUpdateListener {
 
         override fun onJoin(room: HMSRoom) {
-            eventSink?.sendEvent(OutGoingMethodType.ON_JOIN, JSONUtils.hmsRoomToJSON(room).toJson())
+            eventSink?.sendEvent(OutGoingMethodType.ON_JOIN, JSONUtils.hmsRoomToJSON(room).toString())
         }
 
         override fun onPeerUpdate(type: HMSPeerUpdate, peer: HMSPeer) {
             val arguments = JSONUtils.hmsPeerToJSON(peer)
             arguments.put("type", type.name)
-            eventSink?.sendEvent(OutGoingMethodType.ON_PEER_UPDATE, arguments.toJson())
+            eventSink?.sendEvent(OutGoingMethodType.ON_PEER_UPDATE, arguments.toString())
         }
 
         override fun onRoomUpdate(type: HMSRoomUpdate, hmsRoom: HMSRoom) {
             val arguments = JSONUtils.hmsRoomToJSON(hmsRoom)
             arguments.put("type", type.name)
-            eventSink?.sendEvent(OutGoingMethodType.ON_ROOM_UPDATE, arguments.toJson())
+            eventSink?.sendEvent(OutGoingMethodType.ON_ROOM_UPDATE, arguments.toString())
         }
 
         override fun onTrackUpdate(type: HMSTrackUpdate, track: HMSTrack, peer: HMSPeer) {
             val arguments = JSONUtils.hmsPeerToJSON(peer)
             arguments.put("trackStatus", type.name)
-            eventSink?.sendEvent(OutGoingMethodType.ON_TRACK_UPDATE, arguments.toJson())
+            eventSink?.sendEvent(OutGoingMethodType.ON_TRACK_UPDATE, arguments.toString())
         }
 
         override fun onMessageReceived(message: HMSMessage) {
-            eventSink?.sendEvent(OutGoingMethodType.ON_MESSAGE_RECEIVED, JSONUtils.hmsMessageToJSON(message).toJson())
+            eventSink?.sendEvent(OutGoingMethodType.ON_MESSAGE_RECEIVED, JSONUtils.hmsMessageToJSON(message).toString())
         }
 
         override fun onError(error: HMSException) {
-            eventSink?.sendEvent(OutGoingMethodType.ON_ERROR, JSONUtils.hmsExceptionToJSON(error).toJson())
+            eventSink?.sendEvent(OutGoingMethodType.ON_ERROR, JSONUtils.hmsExceptionToJSON(error).toString())
         }
 
         override fun onReconnecting(error: HMSException) {
-            eventSink?.sendEvent(OutGoingMethodType.ON_RECONNECTING, JSONUtils.hmsExceptionToJSON(error).toJson())
+            eventSink?.sendEvent(OutGoingMethodType.ON_RECONNECTING, JSONUtils.hmsExceptionToJSON(error).toString())
         }
 
         override fun onRoleChangeRequest(request: HMSRoleChangeRequest) {
-            eventSink?.sendEvent(OutGoingMethodType.ON_ROLE_CHANGE_REQUEST, JSONUtils.hmsRoleChangeRequest(request).toJson())
+            eventSink?.sendEvent(OutGoingMethodType.ON_ROLE_CHANGE_REQUEST, JSONUtils.hmsRoleChangeRequest(request).toString())
         }
 
         override fun onReconnected() {
