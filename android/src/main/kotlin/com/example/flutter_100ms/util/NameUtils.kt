@@ -4,7 +4,7 @@ import java.util.*
 
 object NameUtils {
     fun getInitials(name: String): String {
-        val words = name.trim().toUpperCase(Locale.ROOT).split(' ')
+        val words = name.trim().uppercase(Locale.ROOT).split(' ')
         return when {
             words.isEmpty() -> {
                 "--"

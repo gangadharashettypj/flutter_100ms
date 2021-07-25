@@ -25,12 +25,14 @@ class Flutter100ms {
     return response;
   }
 
-  static Future<bool?> join(String userName, String description) async {
+  static Future<bool?> join(
+      String userName, String description, String token) async {
     final response = await _channel.invokeMethod(
       'JOIN',
       {
         'userName': userName,
         'description': description,
+        'token': token,
       },
     );
     return response;

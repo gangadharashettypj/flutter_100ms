@@ -12,6 +12,8 @@ dependencies:
   flutter:
     sdk: flutter
 
+  dio: ^4.0.0
+
   flutter_100ms:
     # When depending on this package from a real application you should use:
     #   flutter_100ms: ^x.y.z

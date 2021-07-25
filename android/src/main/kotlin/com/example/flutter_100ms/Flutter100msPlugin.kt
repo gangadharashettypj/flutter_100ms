@@ -1,6 +1,9 @@
 package com.example.flutter_100ms
 
 import android.content.Context
+
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log
 import androidx.annotation.NonNull
 import com.example.flutter_100ms.constants.IncomingMethodType
@@ -27,15 +30,21 @@ class Flutter100msPlugin : FlutterPlugin, MethodCallHandler {
 
     private var eventSink: EventSink? = null
 
+    companion object {
+        var handler: Handler? = null
+    }
+
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter_100ms")
         channel.setMethodCallHandler(this)
 
         context = flutterPluginBinding.applicationContext
-        val eventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "flutter_100ms_events")
+        val eventChannel =
+            EventChannel(flutterPluginBinding.binaryMessenger, "flutter_100ms_events")
         eventChannel.setStreamHandler(object : StreamHandler {
             override fun onListen(arguments: Any?, events: EventSink?) {
                 eventSink = events
+                handler =  Handler(Looper.getMainLooper());
             }
 
             override fun onCancel(arguments: Any?) {
