@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.util.Log
 import androidx.annotation.NonNull
 import com.example.flutter_100ms.constants.IncomingMethodType
+import com.example.flutter_100ms.hms_controller.video_view.HMSVideoRenderViewFactory
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.EventChannel.EventSink
@@ -44,13 +45,15 @@ class Flutter100msPlugin : FlutterPlugin, MethodCallHandler {
         eventChannel.setStreamHandler(object : StreamHandler {
             override fun onListen(arguments: Any?, events: EventSink?) {
                 eventSink = events
-                handler =  Handler(Looper.getMainLooper());
+                handler = Handler(Looper.getMainLooper());
             }
 
             override fun onCancel(arguments: Any?) {
                 Log.d("HMS", "EventChannel.setStreamHandler()/onCancel()")
             }
         })
+
+        flutterPluginBinding.platformViewRegistry.registerViewFactory("HMSVideoRenderView", HMSVideoRenderViewFactory())
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -59,13 +62,16 @@ class Flutter100msPlugin : FlutterPlugin, MethodCallHandler {
                 result.success("Android ${android.os.Build.VERSION.RELEASE}")
             }
             IncomingMethodType.INIT.name -> {
-                initMethodChannelHandler(call, result, context, eventSink = eventSink!!)
+                initMethodChannelHandler(call, result, context, eventSink!!)
             }
             IncomingMethodType.JOIN.name -> {
                 joinMethodChannelHandler(call, result)
             }
             IncomingMethodType.LEAVE.name -> {
                 leaveMethodChannelHandler(result)
+            }
+            IncomingMethodType.BIND_VIDEO_VIEW.name -> {
+                bindVideoViewChannelHandler(call, result)
             }
             else -> {
                 result.notImplemented()

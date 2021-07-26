@@ -5,4 +5,5 @@ enum class IncomingMethodType {
     VERSION,
     JOIN,
     LEAVE,
+    BIND_VIDEO_VIEW,
 }

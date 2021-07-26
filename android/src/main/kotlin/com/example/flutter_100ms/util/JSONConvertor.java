@@ -15,7 +15,7 @@ import live.hms.video.sdk.models.role.HMSRole;
 import live.hms.video.sdk.models.role.PublishParams;
 import live.hms.video.sdk.models.role.SubscribeParams;
 
-public class JSONUtils {
+public class JSONConvertor {
     public static JSONObject publishParamsToJSON(PublishParams publishParams) {
         JSONObject json = new JSONObject();
         try {
@@ -119,7 +119,7 @@ public class JSONUtils {
     public static JSONObject hmsPeerToJSON(HMSPeer peer) {
         JSONObject json = new JSONObject();
         try {
-            json.put("peer", peer.getName());
+            json.put("name", peer.getName());
             json.put("peerId", peer.getPeerID());
             json.put("customerUserID", peer.getCustomerUserID());
             json.put("customerDescription", peer.getCustomerDescription());

@@ -10,12 +10,12 @@ class Flutter100ms {
 
   static EventChannel get eventChannel => _eventChannel;
 
-  static Future<String?> get platformVersion async {
-    final String? version = await _channel.invokeMethod('getPlatformVersion');
+  static Future<dynamic> get platformVersion async {
+    final version = await _channel.invokeMethod('getPlatformVersion');
     return version;
   }
 
-  static Future<bool?> init(bool speaker) async {
+  static Future<dynamic> init(bool speaker) async {
     final response = await _channel.invokeMethod(
       'INIT',
       {
@@ -25,7 +25,7 @@ class Flutter100ms {
     return response;
   }
 
-  static Future<bool?> join(
+  static Future<dynamic> join(
       String userName, String description, String token) async {
     final response = await _channel.invokeMethod(
       'JOIN',
@@ -38,8 +38,13 @@ class Flutter100ms {
     return response;
   }
 
-  static Future<bool?> leave() async {
+  static Future<dynamic> leave() async {
     final response = await _channel.invokeMethod('LEAVE');
     return response;
+  }
+
+  static Future<dynamic> bindVideoView(int viewId, String peerId) async {
+    var params = {"ViewId": viewId, "PeerId": peerId};
+    return _channel.invokeMethod('BIND_VIDEO_VIEW', params);
   }
 }

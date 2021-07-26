@@ -42,3 +42,11 @@ fun leaveMethodChannelHandler(result: MethodChannel.Result) {
     HmsController.instance.leave()
     result.success(true)
 }
+
+fun bindVideoViewChannelHandler(call: MethodCall, result: MethodChannel.Result) {
+    val viewId = call.argument<Int>("ViewId")!!
+    val peerId = call.argument<String>("PeerId")!!
+    HmsController.instance.viewIds[peerId] = viewId
+    HmsController.instance.updateVideos(peerId)
+    result.success("OK")
+}
