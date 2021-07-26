@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_100ms/flutter_100ms.dart';
 import 'package:flutter_100ms_example/event_listener.dart';
 import 'package:flutter_100ms_example/models.dart';
+import 'package:flutter_easy_permission/easy_permissions.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 void main() {
   runApp(MyApp());
@@ -47,6 +49,13 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   var cameraEnabled = true;
   var audioEnabled = true;
+  FlutterEasyPermission _easyPermission;
+
+  @override
+  void dispose() {
+    _easyPermission.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -57,6 +66,22 @@ class _MyAppState extends State<MyApp> {
         },
       );
     });
+
+    _easyPermission = FlutterEasyPermission()
+      ..addPermissionCallback(
+        onGranted: (requestCode, perms, perm) {
+          _permission = true;
+        },
+        onDenied: (requestCode, perms, perm, isPermanent) {
+          _permission = false;
+          if (isPermanent) {
+            FlutterEasyPermission.showAppSettingsDialog(title: "Camera");
+          } else {
+            debugPrint("Android Deny authorization:$perms");
+            debugPrint("iOS Deny authorization:$perm");
+          }
+        },
+      );
     super.initState();
   }
 
@@ -64,12 +89,46 @@ class _MyAppState extends State<MyApp> {
     return 'https://$environment.100ms.live/hmsapi/get-token';
   }
 
+  var _permission = false;
+  static const permissions = [
+    Permissions.CAMERA,
+    Permissions.RECORD_AUDIO,
+  ];
+
+  static const permissionGroup = [
+    PermissionGroup.Camera,
+    PermissionGroup.Microphone,
+  ];
   Widget _buildButtonBar() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         ElevatedButton(
           onPressed: () async {
+            if (!(await FlutterEasyPermission.has(
+              perms: permissions,
+              permsGroup: permissionGroup,
+            ))) {
+              FlutterEasyPermission.request(
+                perms: permissions,
+                permsGroup: permissionGroup,
+                rationale: "Give permissions",
+              );
+              return;
+            }
+            if (controller.text.isEmpty) {
+              Fluttertoast.showToast(
+                msg: "Enter valid username",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.TOP,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.red,
+                textColor: Colors.white,
+                fontSize: 16.0,
+              );
+              return;
+            }
+
             String url =
                 'https://frontrow.app.100ms.live/meeting/tasty-auburn-gorilla';
             String endpoint = url.tokenEndpointEnvironment;
@@ -93,7 +152,7 @@ class _MyAppState extends State<MyApp> {
               );
 
               Flutter100ms.init(false);
-              Flutter100ms.join('GS', '', response.data['token']);
+              Flutter100ms.join(controller.text, '', response.data['token']);
             }
             // if (REGEX_MEETING_URL_ROOM_ID.hasMatch(url)) {
             //   final match = REGEX_MEETING_URL_ROOM_ID.firstMatch(url)!;
@@ -182,7 +241,7 @@ class _MyAppState extends State<MyApp> {
         (int index) {
           return ListTile(
             title: Container(
-              height: 120,
+              height: 150,
               child: videoViews[joinData?.peerList[index]?.peerId],
             ),
           );
@@ -191,21 +250,32 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  final controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        body: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: _buildUserListView(),
-                ),
-                _buildButtonBar(),
-              ],
+        body: Padding(
+          padding: EdgeInsets.all(8),
+          child: SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: _buildUserListView(),
+                  ),
+                  TextField(
+                    controller: controller,
+                    decoration: InputDecoration(hintText: 'UserName'),
+                  ),
+                  SizedBox(
+                    height: 16,
+                  ),
+                  _buildButtonBar(),
+                ],
+              ),
             ),
           ),
         ),

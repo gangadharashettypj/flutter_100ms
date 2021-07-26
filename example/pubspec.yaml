@@ -13,6 +13,8 @@ dependencies:
     sdk: flutter
 
   dio: ^4.0.0
+  fluttertoast: ^8.0.7
+  flutter_easy_permission: ^1.0.0
 
   flutter_100ms:
     # When depending on this package from a real application you should use:
