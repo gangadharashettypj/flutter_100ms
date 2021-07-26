@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_100ms/flutter_100ms.dart';
 import 'package:flutter_100ms_example/event_listener.dart';
+import 'package:flutter_100ms_example/models.dart';
 
 void main() {
   runApp(MyApp());
@@ -44,6 +45,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  var cameraEnabled = true;
+  var audioEnabled = true;
+
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -119,10 +123,42 @@ class _MyAppState extends State<MyApp> {
         ElevatedButton(
           onPressed: () {
             Flutter100ms.leave();
-            joinData = null;
+            joinData = JoinDataModel(
+              peerList: [],
+            );
+            videoViews = {};
+            viewIds = {};
             setState(() {});
           },
           child: Text('Leave'),
+        ),
+        FloatingActionButton(
+          onPressed: () async {
+            await Flutter100ms.toggleCamera();
+            setState(() {
+              cameraEnabled = !cameraEnabled;
+            });
+          },
+          child: Icon(
+            Icons.camera_alt,
+            color: Colors.white,
+          ),
+          backgroundColor: cameraEnabled ? Colors.grey : Colors.red,
+          mini: true,
+        ),
+        FloatingActionButton(
+          onPressed: () async {
+            await Flutter100ms.toggleAudio();
+            setState(() {
+              audioEnabled = !audioEnabled;
+            });
+          },
+          child: Icon(
+            audioEnabled ? Icons.mic : Icons.mic_off,
+            color: Colors.white,
+          ),
+          mini: true,
+          backgroundColor: audioEnabled ? Colors.grey : Colors.red,
         ),
       ],
     );
@@ -137,24 +173,21 @@ class _MyAppState extends State<MyApp> {
       );
     }
 
-    return ListView.separated(
-      itemBuilder: (BuildContext context, int index) {
-        return ListTile(
-          title: Container(
-            height: 120,
-            child: videoViews[joinData?.peerList[index]?.peerId],
-          ),
-          // Text(
-          //   '${index + 1}. ${joinData?.peerList[index]?.name}',
-          // ),
-        );
-      },
-      separatorBuilder: (BuildContext context, int index) {
-        return SizedBox(
-          height: 16,
-        );
-      },
-      itemCount: joinData?.peerList?.length ?? 0,
+    return GridView.count(
+      crossAxisCount: 2,
+      crossAxisSpacing: 8,
+      mainAxisSpacing: 8,
+      children: List.generate(
+        joinData?.peerList?.length ?? 0,
+        (int index) {
+          return ListTile(
+            title: Container(
+              height: 120,
+              child: videoViews[joinData?.peerList[index]?.peerId],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -168,10 +201,10 @@ class _MyAppState extends State<MyApp> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _buildButtonBar(),
                 Expanded(
                   child: _buildUserListView(),
                 ),
+                _buildButtonBar(),
               ],
             ),
           ),

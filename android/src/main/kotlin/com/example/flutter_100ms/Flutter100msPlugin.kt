@@ -73,6 +73,18 @@ class Flutter100msPlugin : FlutterPlugin, MethodCallHandler {
             IncomingMethodType.BIND_VIDEO_VIEW.name -> {
                 bindVideoViewChannelHandler(call, result)
             }
+            IncomingMethodType.TOGGLE_AUDIO.name -> {
+                toggleAudioChannelHandler(result)
+            }
+            IncomingMethodType.TOGGLE_VIDEO.name -> {
+                toggleVideoChannelHandler(result)
+            }
+            IncomingMethodType.IS_AUDIO_ENABLED.name -> {
+                isAudioEnabledChannelHandler(result)
+            }
+            IncomingMethodType.IS_VIDEO_ENABLED.name -> {
+                isVideoEnabledChannelHandler(result)
+            }
             else -> {
                 result.notImplemented()
             }

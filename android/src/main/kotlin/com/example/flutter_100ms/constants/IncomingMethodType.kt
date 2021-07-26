@@ -6,4 +6,8 @@ enum class IncomingMethodType {
     JOIN,
     LEAVE,
     BIND_VIDEO_VIEW,
+    TOGGLE_VIDEO,
+    TOGGLE_AUDIO,
+    IS_VIDEO_ENABLED,
+    IS_AUDIO_ENABLED,
 }

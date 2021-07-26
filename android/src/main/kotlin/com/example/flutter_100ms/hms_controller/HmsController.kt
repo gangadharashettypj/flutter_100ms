@@ -3,6 +3,7 @@ package com.example.flutter_100ms.hms_controller
 import android.content.Context
 import android.util.Log
 import android.view.View
+import android.widget.GridLayout
 import androidx.lifecycle.MutableLiveData
 import com.example.flutter_100ms.Flutter100msPlugin
 import com.example.flutter_100ms.constants.OutGoingMethodType
@@ -67,11 +68,9 @@ class HmsController {
 
     private val bindedVideoTrackIds = mutableSetOf<String>()
 
-    val renderedViews = ArrayList<RenderedViewPair>()
+    private val renderedViews = ArrayList<RenderedViewPair>()
 
-    var isViewVisible = false
-
-    val viewIds = mutableMapOf<String, Int>()
+    var viewIds = mutableMapOf<String, Int>()
 
     companion object {
         var instance = HmsController()
@@ -153,7 +152,7 @@ class HmsController {
         localVideoTrack?.let { setLocalVideoEnabled(it.isMute) }
     }
 
-    fun setLocalAudioEnabled(enabled: Boolean) {
+    private fun setLocalAudioEnabled(enabled: Boolean) {
 
         localAudioTrack?.apply {
             setMute(!enabled)
@@ -371,8 +370,10 @@ class HmsController {
         if (item.video == null || item.video?.isMute == true) return
 
         binding.surface_view.let { view ->
-            view.setScalingType(scalingType)
-            view.setEnableHardwareScaler(true)
+            Flutter100msPlugin.handler!!.post {
+                view.setScalingType(scalingType)
+                view.setEnableHardwareScaler(true)
+            }
 
             SurfaceViewRendererUtil.bind(view, item).let {
                 if (it) {
@@ -415,6 +416,60 @@ class HmsController {
         }
     }
 
+
+    fun updateVideos2() {
+        val  newVideos: List<MeetingTrack> = _tracks.toList()
+
+        val newRenderedViews = ArrayList<RenderedViewPair>()
+
+        // Remove all the views which are not required now
+        for (currentRenderedView in renderedViews) {
+            val newVideo = newVideos.find { it == currentRenderedView.video }
+            if (newVideo == null) {
+                    unbindSurfaceView(
+                        currentRenderedView.binding.video_card,
+                        currentRenderedView.video
+                    )
+            }
+        }
+
+        for (_newVideo in newVideos) {
+            _newVideo.also { newVideo ->
+
+                // Check if video already rendered
+                val renderedViewPair = renderedViews.find { it.video == newVideo }
+                if (renderedViewPair != null) {
+                    newRenderedViews.add(renderedViewPair)
+
+                    if (!bindedVideoTrackIds.contains(newVideo.video?.trackId ?: "")) {
+                        bindSurfaceView(renderedViewPair.binding.video_card, newVideo)
+                    }
+
+                } else if(viewIds.containsKey(newVideo.peer.peerID)){
+                    // Create a new view
+                   try{
+                       val videoBinding = createVideoView(viewIds[newVideo.peer.peerID]!!)
+
+                       bindSurfaceView(videoBinding.view, newVideo)
+
+                       newRenderedViews.add(RenderedViewPair(videoBinding.view, newVideo))
+                   }
+                   catch(e:Exception){
+                       e.printStackTrace()
+                   }
+                }
+            }
+        }
+
+        renderedViews.clear()
+        renderedViews.addAll(newRenderedViews)
+
+        // Re-bind all the videos, this handles any changes made in isMute
+        for (view in renderedViews) {
+            bindVideo(view.binding.video_card, view.video)
+        }
+    }
+
     fun updateVideos(peerId: String) {
         val newVideo: MeetingTrack? = _tracks.find { it.peer.peerID == peerId }
 
@@ -430,7 +485,6 @@ class HmsController {
             renderedViews.add(view)
             bindVideo(view.binding.video_card, view.video)
         }
-
     }
 
     private val hmsUpdateListener = object : HMSUpdateListener {
@@ -509,14 +563,17 @@ class HmsController {
                         peer
                     )
                 }
-                HMSTrackUpdate.TRACK_MUTED -> tracks.postValue(_tracks)
-                HMSTrackUpdate.TRACK_UNMUTED -> tracks.postValue(_tracks)
+                HMSTrackUpdate.TRACK_MUTED -> {
+                    tracks.postValue(_tracks)
+                }
+                HMSTrackUpdate.TRACK_UNMUTED -> {
+                    tracks.postValue(_tracks)
+                }
                 HMSTrackUpdate.TRACK_DESCRIPTION_CHANGED -> tracks.postValue(_tracks)
             }
 
             val arguments = JSONConvertor.hmsPeerToJSON(peer)
             arguments.put("trackStatus", type.name)
-            updateVideos(peer.peerID)
             eventSink?.sendEvent(OutGoingMethodType.ON_TRACK_UPDATE, arguments.toString())
         }
 

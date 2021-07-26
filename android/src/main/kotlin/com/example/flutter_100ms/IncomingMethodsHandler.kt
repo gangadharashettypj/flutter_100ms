@@ -40,6 +40,8 @@ fun joinMethodChannelHandler(call: MethodCall, result: MethodChannel.Result) {
 
 fun leaveMethodChannelHandler(result: MethodChannel.Result) {
     HmsController.instance.leave()
+    HmsController.instance.viewIds = mutableMapOf()
+    HmsController.instance = HmsController()
     result.success(true)
 }
 
@@ -47,6 +49,24 @@ fun bindVideoViewChannelHandler(call: MethodCall, result: MethodChannel.Result) 
     val viewId = call.argument<Int>("ViewId")!!
     val peerId = call.argument<String>("PeerId")!!
     HmsController.instance.viewIds[peerId] = viewId
-    HmsController.instance.updateVideos(peerId)
+    HmsController.instance.updateVideos2()
     result.success("OK")
+}
+
+fun toggleVideoChannelHandler(result: MethodChannel.Result) {
+    HmsController.instance.toggleLocalVideo()
+    result.success("OK")
+}
+
+fun toggleAudioChannelHandler(result: MethodChannel.Result) {
+    HmsController.instance.toggleLocalAudio()
+    result.success("OK")
+}
+
+fun isVideoEnabledChannelHandler(result: MethodChannel.Result) {
+    result.success(HmsController.instance.isLocalVideoEnabled)
+}
+
+fun isAudioEnabledChannelHandler(result: MethodChannel.Result) {
+    result.success(HmsController.instance.isLocalAudioEnabled)
 }

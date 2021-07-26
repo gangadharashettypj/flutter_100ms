@@ -43,6 +43,26 @@ class Flutter100ms {
     return response;
   }
 
+  static Future<dynamic> toggleCamera() async {
+    final response = await _channel.invokeMethod('TOGGLE_VIDEO');
+    return response;
+  }
+
+  static Future<dynamic> toggleAudio() async {
+    final response = await _channel.invokeMethod('TOGGLE_AUDIO');
+    return response;
+  }
+
+  static Future<dynamic> isCameraEnabled() async {
+    final response = await _channel.invokeMethod('IS_VIDEO_ENABLED');
+    return response;
+  }
+
+  static Future<dynamic> isAudioEnabled() async {
+    final response = await _channel.invokeMethod('IS_AUDIO_ENABLED');
+    return response;
+  }
+
   static Future<dynamic> bindVideoView(int viewId, String peerId) async {
     var params = {"ViewId": viewId, "PeerId": peerId};
     return _channel.invokeMethod('BIND_VIDEO_VIEW', params);
