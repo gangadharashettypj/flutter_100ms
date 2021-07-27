@@ -69,11 +69,8 @@ class _MyAppState extends State<MyApp> {
 
     _easyPermission = FlutterEasyPermission()
       ..addPermissionCallback(
-        onGranted: (requestCode, perms, perm) {
-          _permission = true;
-        },
+        onGranted: (requestCode, perms, perm) {},
         onDenied: (requestCode, perms, perm, isPermanent) {
-          _permission = false;
           if (isPermanent) {
             FlutterEasyPermission.showAppSettingsDialog(title: "Camera");
           } else {
@@ -89,7 +86,7 @@ class _MyAppState extends State<MyApp> {
     return 'https://$environment.100ms.live/hmsapi/get-token';
   }
 
-  var _permission = false;
+  var status = 'Press join to join the meeting';
   static const permissions = [
     Permissions.CAMERA,
     Permissions.RECORD_AUDIO,
@@ -101,124 +98,116 @@ class _MyAppState extends State<MyApp> {
   ];
   Widget _buildButtonBar() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        ElevatedButton(
-          onPressed: () async {
-            if (!(await FlutterEasyPermission.has(
-              perms: permissions,
-              permsGroup: permissionGroup,
-            ))) {
-              FlutterEasyPermission.request(
+        if (joinData == null)
+          ElevatedButton(
+            onPressed: () async {
+              if (!(await FlutterEasyPermission.has(
                 perms: permissions,
                 permsGroup: permissionGroup,
-                rationale: "Give permissions",
-              );
-              return;
-            }
-            if (controller.text.isEmpty) {
-              Fluttertoast.showToast(
-                msg: "Enter valid username",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.TOP,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.red,
-                textColor: Colors.white,
-                fontSize: 16.0,
-              );
-              return;
-            }
+              ))) {
+                FlutterEasyPermission.request(
+                  perms: permissions,
+                  permsGroup: permissionGroup,
+                  rationale: "Give permissions",
+                );
+                return;
+              }
+              if (controller.text.isEmpty) {
+                status = "Enter valid username";
+                Fluttertoast.showToast(
+                  msg: "Enter valid username",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.TOP,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.red,
+                  textColor: Colors.white,
+                  fontSize: 16.0,
+                );
+                setState(() {});
+                return;
+              }
 
-            String url =
-                'https://frontrow.app.100ms.live/meeting/tasty-auburn-gorilla';
-            String endpoint = url.tokenEndpointEnvironment;
-            String subDomain = url.subdomain;
-            String formattedUrl =
-                getTokenEndpointForRoomId(endpoint, subDomain);
+              status = "Joining...";
+              setState(() {});
+              String url =
+                  'https://frontrow.app.100ms.live/meeting/tasty-auburn-gorilla';
+              String endpoint = url.tokenEndpointEnvironment;
+              String subDomain = url.subdomain;
+              String formattedUrl =
+                  getTokenEndpointForRoomId(endpoint, subDomain);
 
-            if (REGEX_MEETING_URL_CODE.hasMatch(url)) {
-              final match = REGEX_MEETING_URL_CODE.firstMatch(url);
-              final code = match.group(3);
-              final response = await Dio().post(
-                formattedUrl,
-                data: {
-                  'code': code,
-                  'user_id': DateTime.now().millisecondsSinceEpoch.toString(),
-                },
-                options: Options(headers: {
-                  'Accept-Type': 'application/json',
-                  'subdomain': subDomain,
-                }),
-              );
-
-              Flutter100ms.init(false);
-              Flutter100ms.join(controller.text, '', response.data['token']);
-            }
-            // if (REGEX_MEETING_URL_ROOM_ID.hasMatch(url)) {
-            //   final match = REGEX_MEETING_URL_ROOM_ID.firstMatch(url)!;
-            //   final roomId = match.group(2);
-            //   final role = match.group(3);
-            //
-            //   final response = await Dio().post(
-            //     formattedUrl,
-            //     data: {
-            //       'room_id': roomId,
-            //       'role': role,
-            //       'user_id':
-            //           DateTime.now().millisecondsSinceEpoch.toString(),
-            //     },
-            //     options: Options(headers: {
-            //       'Accept-Type': 'application/json',
-            //       'subdomain': subDomain,
-            //     }),
-            //   );
-            //
-            //   Flutter100ms.init(false);
-            //   Flutter100ms.join('GS', '', response.data['token']);
-            // }
-          },
-          child: Text('Join'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            Flutter100ms.leave();
-            joinData = JoinDataModel(
-              peerList: [],
-            );
-            videoViews = {};
-            viewIds = {};
-            setState(() {});
-          },
-          child: Text('Leave'),
-        ),
-        FloatingActionButton(
-          onPressed: () async {
-            await Flutter100ms.toggleCamera();
-            setState(() {
-              cameraEnabled = !cameraEnabled;
-            });
-          },
-          child: Icon(
-            Icons.camera_alt,
-            color: Colors.white,
+              if (REGEX_MEETING_URL_CODE.hasMatch(url)) {
+                final match = REGEX_MEETING_URL_CODE.firstMatch(url);
+                final code = match.group(3);
+                final response = await Dio().post(
+                  formattedUrl,
+                  data: {
+                    'code': code,
+                    'user_id': DateTime.now().millisecondsSinceEpoch.toString(),
+                  },
+                  options: Options(headers: {
+                    'Accept-Type': 'application/json',
+                    'subdomain': subDomain,
+                  }),
+                );
+                joinData = JoinDataModel(
+                  peerList: [],
+                );
+                Flutter100ms.init(false);
+                Flutter100ms.join(controller.text, '', response.data['token']);
+              } else {
+                status = "Error joining meeting";
+                setState(() {});
+              }
+            },
+            child: Text('Join'),
           ),
-          backgroundColor: cameraEnabled ? Colors.grey : Colors.red,
-          mini: true,
-        ),
-        FloatingActionButton(
-          onPressed: () async {
-            await Flutter100ms.toggleAudio();
-            setState(() {
-              audioEnabled = !audioEnabled;
-            });
-          },
-          child: Icon(
-            audioEnabled ? Icons.mic : Icons.mic_off,
-            color: Colors.white,
+        if (joinData != null)
+          ElevatedButton(
+            onPressed: () {
+              Flutter100ms.leave();
+              status = 'Press join to join the meeting';
+              audioEnabled = true;
+              cameraEnabled = true;
+              joinData = null;
+              videoViews = {};
+              viewIds = {};
+              setState(() {});
+            },
+            child: Text('Leave'),
           ),
-          mini: true,
-          backgroundColor: audioEnabled ? Colors.grey : Colors.red,
-        ),
+        if (joinData != null)
+          FloatingActionButton(
+            onPressed: () async {
+              await Flutter100ms.toggleCamera();
+              setState(() {
+                cameraEnabled = !cameraEnabled;
+              });
+            },
+            child: Icon(
+              Icons.camera_alt,
+              color: Colors.white,
+            ),
+            backgroundColor: cameraEnabled ? Colors.grey : Colors.red,
+            mini: true,
+          ),
+        if (joinData != null)
+          FloatingActionButton(
+            onPressed: () async {
+              await Flutter100ms.toggleAudio();
+              setState(() {
+                audioEnabled = !audioEnabled;
+              });
+            },
+            child: Icon(
+              audioEnabled ? Icons.mic : Icons.mic_off,
+              color: Colors.white,
+            ),
+            mini: true,
+            backgroundColor: audioEnabled ? Colors.grey : Colors.red,
+          ),
       ],
     );
   }
@@ -227,7 +216,7 @@ class _MyAppState extends State<MyApp> {
     if ((joinData?.peerList?.length ?? 0) == 0) {
       return Center(
         child: Text(
-          'No one joined',
+          status,
         ),
       );
     }

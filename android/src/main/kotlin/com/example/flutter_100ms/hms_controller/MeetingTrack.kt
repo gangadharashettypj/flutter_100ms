@@ -4,9 +4,9 @@ import live.hms.video.media.tracks.*
 import live.hms.video.sdk.models.HMSPeer
 
 data class MeetingTrack(
-  val peer: HMSPeer,
-  var video: HMSVideoTrack?,
-  var audio: HMSAudioTrack?,
+    var peer: HMSPeer,
+    var video: HMSVideoTrack?,
+    var audio: HMSAudioTrack?,
 ) {
 
   override fun equals(other: Any?): Boolean {

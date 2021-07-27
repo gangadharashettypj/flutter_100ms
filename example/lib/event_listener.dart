@@ -5,9 +5,7 @@ import 'package:flutter_100ms/video_renderer_view.dart';
 import 'package:flutter_100ms_example/enums.dart';
 import 'package:flutter_100ms_example/models.dart';
 
-JoinDataModel joinData = JoinDataModel(
-  peerList: [],
-);
+JoinDataModel joinData;
 Map<String, HMSVideoRenderView> videoViews = {};
 Map<String, int> viewIds = {};
 
@@ -46,14 +44,6 @@ void listenEvents({Null Function() refresh}) {
     } else if (eventName == InComingMethodType.ON_PEER_UPDATE.rawValue) {
       final peerData = TrackUpdateDataModel.fromJson(eventArguments);
 
-      joinData.peerList.firstWhere(
-        (element) => element.peerId == peerData.peerId,
-        orElse: () {
-          joinData.peerList.add(PeerInfo.fromJson(peerData.toJson()));
-
-          return null;
-        },
-      );
       switch (peerData.type) {
         case PeerUpdateType.PEER_LEFT:
           videoViews.remove(peerData.peerId);
@@ -69,6 +59,14 @@ void listenEvents({Null Function() refresh}) {
         case PeerUpdateType.STARTED_SPEAKING:
         case PeerUpdateType.STOPPED_SPEAKING:
         case PeerUpdateType.ROLE_CHANGED:
+          joinData.peerList.firstWhere(
+            (element) => element.peerId == peerData.peerId,
+            orElse: () {
+              joinData.peerList.add(PeerInfo.fromJson(peerData.toJson()));
+
+              return null;
+            },
+          );
           final index = joinData.peerList
               .indexWhere((element) => element.peerId == peerData.peerId);
           joinData.peerList[index] = PeerInfo.fromJson(peerData.toJson());

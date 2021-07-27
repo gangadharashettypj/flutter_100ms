@@ -6,6 +6,8 @@ import com.example.flutter_100ms.hms_controller.HmsController
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import live.hms.video.media.tracks.HMSTrack
+import live.hms.video.media.tracks.HMSVideoTrack
 
 
 fun initMethodChannelHandler(
@@ -49,12 +51,13 @@ fun bindVideoViewChannelHandler(call: MethodCall, result: MethodChannel.Result) 
     val viewId = call.argument<Int>("ViewId")!!
     val peerId = call.argument<String>("PeerId")!!
     HmsController.instance.viewIds[peerId] = viewId
-    HmsController.instance.updateVideos2()
+    HmsController.instance.update()
     result.success("OK")
 }
 
 fun toggleVideoChannelHandler(result: MethodChannel.Result) {
     HmsController.instance.toggleLocalVideo()
+    HmsController.instance.update()
     result.success("OK")
 }
 
