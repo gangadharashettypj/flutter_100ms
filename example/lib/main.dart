@@ -102,67 +102,73 @@ class _MyAppState extends State<MyApp> {
       children: [
         if (joinData == null)
           ElevatedButton(
-            onPressed: () async {
-              if (!(await FlutterEasyPermission.has(
-                perms: permissions,
-                permsGroup: permissionGroup,
-              ))) {
-                FlutterEasyPermission.request(
-                  perms: permissions,
-                  permsGroup: permissionGroup,
-                  rationale: "Give permissions",
-                );
-                return;
-              }
-              if (controller.text.isEmpty) {
-                status = "Enter valid username";
-                Fluttertoast.showToast(
-                  msg: "Enter valid username",
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.TOP,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.red,
-                  textColor: Colors.white,
-                  fontSize: 16.0,
-                );
-                setState(() {});
-                return;
-              }
+            onPressed: status == 'Joining...'
+                ? null
+                : () async {
+                    FocusManager.instance.primaryFocus.unfocus();
+                    if (!(await FlutterEasyPermission.has(
+                      perms: permissions,
+                      permsGroup: permissionGroup,
+                    ))) {
+                      FlutterEasyPermission.request(
+                        perms: permissions,
+                        permsGroup: permissionGroup,
+                        rationale: "Give permissions",
+                      );
+                      return;
+                    }
+                    if (controller.text.isEmpty) {
+                      status = "Enter valid username";
+                      Fluttertoast.showToast(
+                        msg: "Enter valid username",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.TOP,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.red,
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                      setState(() {});
+                      return;
+                    }
 
-              status = "Joining...";
-              setState(() {});
-              String url =
-                  'https://frontrow.app.100ms.live/meeting/tasty-auburn-gorilla';
-              String endpoint = url.tokenEndpointEnvironment;
-              String subDomain = url.subdomain;
-              String formattedUrl =
-                  getTokenEndpointForRoomId(endpoint, subDomain);
+                    status = "Joining...";
+                    setState(() {});
+                    String url =
+                        'https://frontrow.app.100ms.live/meeting/tasty-auburn-gorilla';
+                    String endpoint = url.tokenEndpointEnvironment;
+                    String subDomain = url.subdomain;
+                    String formattedUrl =
+                        getTokenEndpointForRoomId(endpoint, subDomain);
 
-              if (REGEX_MEETING_URL_CODE.hasMatch(url)) {
-                final match = REGEX_MEETING_URL_CODE.firstMatch(url);
-                final code = match.group(3);
-                final response = await Dio().post(
-                  formattedUrl,
-                  data: {
-                    'code': code,
-                    'user_id': DateTime.now().millisecondsSinceEpoch.toString(),
+                    if (REGEX_MEETING_URL_CODE.hasMatch(url)) {
+                      final match = REGEX_MEETING_URL_CODE.firstMatch(url);
+                      final code = match.group(3);
+                      final response = await Dio().post(
+                        formattedUrl,
+                        data: {
+                          'code': code,
+                          'user_id':
+                              DateTime.now().millisecondsSinceEpoch.toString(),
+                        },
+                        options: Options(headers: {
+                          'Accept-Type': 'application/json',
+                          'subdomain': subDomain,
+                        }),
+                      );
+                      joinData = JoinDataModel(
+                        peerList: [],
+                      );
+                      Flutter100ms.init(false);
+                      Flutter100ms.join(
+                          controller.text, '', response.data['token']);
+                    } else {
+                      status = "Error joining meeting";
+                      setState(() {});
+                    }
                   },
-                  options: Options(headers: {
-                    'Accept-Type': 'application/json',
-                    'subdomain': subDomain,
-                  }),
-                );
-                joinData = JoinDataModel(
-                  peerList: [],
-                );
-                Flutter100ms.init(false);
-                Flutter100ms.join(controller.text, '', response.data['token']);
-              } else {
-                status = "Error joining meeting";
-                setState(() {});
-              }
-            },
             child: Text('Join'),
+            style: ButtonStyle(),
           ),
         if (joinData != null)
           ElevatedButton(
